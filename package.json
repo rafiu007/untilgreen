@@ -9,7 +9,8 @@
   "scripts": {
     "build": "pnpm -r --sort run build",
     "test": "pnpm -r --sort run test",
-    "lint": "pnpm -r --sort run lint"
+    "lint": "pnpm -r --sort run lint",
+    "release": "pnpm build && pnpm test && pnpm -r publish --access public"
   },
   "devDependencies": {
     "typescript": "^5.5.4",
