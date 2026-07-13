@@ -3,13 +3,19 @@ import { UnsupportedConstraintError } from "@untilgreen/core";
 import { buildClaudeArgs, parseClaudeJson, ClaudeCodeAdapter } from "../src/index.js";
 
 describe("buildClaudeArgs", () => {
-  it("always runs headless json with --bare (stateless, invariant 2)", () => {
+  it("runs headless json, stateless (invariant 2), --bare OFF by default", () => {
     const args = buildClaudeArgs({});
     expect(args).toContain("-p");
-    expect(args).toContain("--bare");
+    // --bare breaks keychain subscription auth (claude 2.1.207, macOS) —
+    // opt-in only
+    expect(args).not.toContain("--bare");
     expect(args.join(" ")).toContain("--output-format json");
     expect(args.join(" ")).not.toContain("--continue");
     expect(args.join(" ")).not.toContain("--resume");
+  });
+
+  it("passes --bare only when opted in", () => {
+    expect(buildClaudeArgs({}, { bare: true })).toContain("--bare");
   });
 
   it("maps max_turns and allowed_tools (camelCase --allowedTools)", () => {
@@ -41,6 +47,12 @@ describe("parseClaudeJson", () => {
 
   it("throws when there is no JSON at all", () => {
     expect(() => parseClaudeJson("command not found")).toThrow(/no JSON payload/);
+  });
+});
+
+describe("adapter info", () => {
+  it("declares USER in requiredEnv (macOS keychain auth needs it)", () => {
+    expect(new ClaudeCodeAdapter().info.requiredEnv).toContain("USER");
   });
 });
 

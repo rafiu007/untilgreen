@@ -4,8 +4,9 @@
  * July 2026) — see CONSTITUTION.md "Adapter ground truth". Flags drift
  * monthly; the nightly smoke matrix and `untilgreen doctor` re-probe.
  *
- * Statelessness (invariant 2): --bare skips hooks/skills/plugins/MCP/auto
- * memory/CLAUDE.md; --continue/--resume are never passed.
+ * Statelessness (invariant 2): --continue/--resume are never passed, so
+ * every invocation is a fresh session. --bare is opt-in only — see
+ * ClaudeCodeAdapterOptions.bare for the field-tested auth breakage.
  */
 import type { Constraints } from "@untilgreen/schema";
 import {
@@ -22,19 +23,27 @@ export interface ClaudeCodeAdapterOptions {
   binary?: string;
   /** extra args appended verbatim (escape hatch for flag drift) */
   extraArgs?: string[];
+  /**
+   * Pass --bare (skip hooks/skills/plugins/MCP/memory/CLAUDE.md discovery).
+   * Default OFF: field-tested 2026-07-13 on claude 2.1.207 (macOS), --bare
+   * also skips keychain credential discovery, so subscription-authenticated
+   * CLIs report "Not logged in". Enable only with ANTHROPIC_API_KEY auth.
+   * Statelessness (invariant 2) does not depend on this flag — sessions are
+   * fresh because --continue/--resume are never passed.
+   */
+  bare?: boolean;
 }
 
-export function buildClaudeArgs(constraints: Constraints): string[] {
+export function buildClaudeArgs(constraints: Constraints, opts: ClaudeCodeAdapterOptions = {}): string[] {
   const args = [
     "-p",
     "--output-format",
     "json",
-    // recommended for scripted calls; will become the -p default upstream
-    "--bare",
     // locked-down baseline: deny anything not explicitly allowed
     "--permission-mode",
     constraints.allowed_tools ? "dontAsk" : "acceptEdits",
   ];
+  if (opts.bare) args.push("--bare");
   if (constraints.max_turns !== undefined) {
     args.push("--max-turns", String(constraints.max_turns));
   }
@@ -67,8 +76,10 @@ export class ClaudeCodeAdapter implements AgentAdapter {
   readonly info: AdapterInfo;
   private readonly binary: string;
   private readonly extraArgs: string[];
+  private readonly opts: ClaudeCodeAdapterOptions;
 
   constructor(opts: ClaudeCodeAdapterOptions = {}) {
+    this.opts = opts;
     this.binary = opts.binary ?? "claude";
     this.extraArgs = opts.extraArgs ?? [];
     this.info = {
@@ -76,9 +87,10 @@ export class ClaudeCodeAdapter implements AgentAdapter {
       displayName: "Claude Code (claude -p)",
       binary: this.binary,
       testedAgentVersions: ["2.1.x (docs verified 2026-07)"],
-      // Auth: API key if present; subscription auth lives under HOME, which
-      // the default env allowlist already passes through.
-      requiredEnv: ["ANTHROPIC_API_KEY"],
+      // Auth: API key if present. Subscription auth uses the macOS keychain,
+      // whose credential lookup fails without USER in the environment
+      // (field-tested 2026-07-13: PATH+HOME alone → "Not logged in").
+      requiredEnv: ["ANTHROPIC_API_KEY", "USER"],
       supportsCostReporting: true,
     };
   }
@@ -98,7 +110,7 @@ export class ClaudeCodeAdapter implements AgentAdapter {
 
   async invoke(req: InvocationRequest): Promise<InvocationResult> {
     this.validateConstraints(req.constraints);
-    const args = [...buildClaudeArgs(req.constraints), ...this.extraArgs];
+    const args = [...buildClaudeArgs(req.constraints, this.opts), ...this.extraArgs];
     const proc = await execCollect(this.binary, args, {
       cwd: req.workspacePath,
       env: req.env,

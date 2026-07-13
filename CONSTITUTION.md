@@ -148,9 +148,13 @@ in the right category is not distribution. See § Adoption.
 - `--output-format json` payload includes `total_cost_usd` + per-model cost
   breakdown → direct max_usd metering.
 - `--bare` skips auto-discovery of hooks, skills, plugins, MCP servers, auto
-  memory, and CLAUDE.md; Anthropic recommends it for scripted calls and says
-  it will become the default for `-p`. Adapters MUST pass it (statelessness
-  + determinism).
+  memory, and CLAUDE.md; Anthropic recommends it for scripted calls.
+  ⚠ FIELD-TESTED CORRECTION (2026-07-13, claude 2.1.207 on macOS): `--bare`
+  also skips keychain credential discovery — subscription-authenticated CLIs
+  report "Not logged in". The adapter therefore makes it opt-in
+  (safe with ANTHROPIC_API_KEY auth only). Same test found keychain auth
+  requires USER in the child env, so adapters declare it in requiredEnv.
+  Statelessness holds regardless: --continue/--resume are never passed.
 - `--permission-mode`: `dontAsk` denies everything not explicitly allowed
   (locked-down CI); `acceptEdits` auto-approves file writes + mkdir/touch/
   mv/cp but not other shell or network.

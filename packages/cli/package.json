@@ -1,19 +1,40 @@
 {
   "name": "untilgreen",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Run your coding agent until green — deterministic gates, any agent, local-first",
   "license": "Apache-2.0",
-  "repository": { "type": "git", "url": "git+https://github.com/rafiu007/untilgreen.git", "directory": "packages/cli" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rafiu007/untilgreen.git",
+    "directory": "packages/cli"
+  },
   "homepage": "https://github.com/rafiu007/untilgreen#readme",
   "bugs": "https://github.com/rafiu007/untilgreen/issues",
-  "keywords": ["untilgreen", "coding-agents", "claude-code", "codex", "workflow", "ci", "test-driven", "agent-orchestration"],
-  "publishConfig": { "access": "public" },
+  "keywords": [
+    "untilgreen",
+    "coding-agents",
+    "claude-code",
+    "codex",
+    "workflow",
+    "ci",
+    "test-driven",
+    "agent-orchestration"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
-  "bin": { "untilgreen": "./dist/index.js" },
+  "bin": {
+    "untilgreen": "./dist/index.js"
+  },
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
-  "engines": { "node": ">=20" },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "tsc -p tsconfig.json && vitest run",

@@ -1,18 +1,33 @@
 {
   "name": "@untilgreen/adapter-codex",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "OpenAI Codex CLI adapter for untilgreen (wraps codex exec --json)",
   "license": "Apache-2.0",
-  "repository": { "type": "git", "url": "git+https://github.com/rafiu007/untilgreen.git", "directory": "packages/adapter-codex" },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rafiu007/untilgreen.git",
+    "directory": "packages/adapter-codex"
+  },
   "homepage": "https://github.com/rafiu007/untilgreen#readme",
   "bugs": "https://github.com/rafiu007/untilgreen/issues",
-  "keywords": ["untilgreen", "codex", "coding-agents", "adapter"],
-  "publishConfig": { "access": "public" },
+  "keywords": [
+    "untilgreen",
+    "codex",
+    "coding-agents",
+    "adapter"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
-  "files": ["dist"],
-  "engines": { "node": ">=20" },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "test": "vitest run",

@@ -134,7 +134,9 @@ export class CodexAdapter implements AgentAdapter {
       displayName: "OpenAI Codex CLI (codex exec --json)",
       binary: opts.binary ?? "codex",
       testedAgentVersions: ["docs snapshot 2026-07 (UNVERIFIED — re-probe via doctor)"],
-      requiredEnv: ["OPENAI_API_KEY", "CODEX_API_KEY"],
+      // USER: keychain-backed auth on macOS fails without it (same failure
+      // mode field-tested with the claude CLI)
+      requiredEnv: ["OPENAI_API_KEY", "CODEX_API_KEY", "USER"],
       supportsCostReporting: this.opts.priceTable !== undefined,
     };
   }

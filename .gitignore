@@ -3,3 +3,4 @@ dist/
 *.tsbuildinfo
 .untilgreen/runs.sqlite*
 .DS_Store
+sandbox/
