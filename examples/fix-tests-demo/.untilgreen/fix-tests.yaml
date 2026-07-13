@@ -1,0 +1,23 @@
+version: 1
+name: fix-tests
+inputs:
+  task: { required: true }
+defaults:
+  agent: claude-code
+budget: { max_usd: 5, max_iterations_total: 20, timeout_minutes: 30 }
+env_allowlist: [PATH, HOME]
+steps:
+  - id: fix
+    prompt: |
+      {{ inputs.task }}
+
+      You are working in {{ workspace.path }} (iteration {{ iteration }}).
+      Do not run interactive commands. If a previous attempt failed, the
+      test output was:
+      {{ gate.output }}
+    gate:
+      run: npm test
+      timeout_seconds: 300
+    on_pass: success
+    on_fail: retry
+    max_iterations: 5

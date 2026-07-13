@@ -1,0 +1,116 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://untilgreen.dev/schemas/workflow-v1.json",
+  "title": "untilgreen workflow v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["version", "steps"],
+  "properties": {
+    "version": { "const": 1 },
+    "name": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_-]*$" },
+    "inputs": {
+      "type": "object",
+      "propertyNames": { "pattern": "^[a-z0-9][a-z0-9_-]*$" },
+      "additionalProperties": {
+        "type": "object",
+        "additionalProperties": false,
+        "properties": {
+          "required": { "type": "boolean", "default": false },
+          "description": { "type": "string" },
+          "default": { "type": "string" }
+        }
+      }
+    },
+    "defaults": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "agent": { "type": "string" },
+        "constraints": { "$ref": "#/$defs/constraints" }
+      }
+    },
+    "budget": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "max_usd": { "type": "number", "exclusiveMinimum": 0 },
+        "max_iterations_total": { "type": "integer", "minimum": 1 },
+        "timeout_minutes": { "type": "number", "exclusiveMinimum": 0 }
+      }
+    },
+    "brake": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "identical_gate_failures": { "type": "integer", "minimum": 1 },
+        "identical_diffs": { "type": "integer", "minimum": 1 },
+        "empty_diffs": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "workspace": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "base_ref": { "type": "string", "minLength": 1 },
+        "keep": { "type": "boolean" }
+      }
+    },
+    "env_allowlist": {
+      "type": "array",
+      "items": { "type": "string", "pattern": "^[A-Za-z_][A-Za-z0-9_]*$" },
+      "uniqueItems": true
+    },
+    "steps": {
+      "type": "array",
+      "minItems": 1,
+      "items": { "$ref": "#/$defs/step" }
+    }
+  },
+  "$defs": {
+    "constraints": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "network": { "type": "boolean" },
+        "max_turns": { "type": "integer", "minimum": 1 },
+        "allowed_tools": {
+          "type": "array",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "gate": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["run"],
+      "properties": {
+        "run": { "type": "string", "minLength": 1 },
+        "timeout_seconds": { "type": "integer", "minimum": 1, "default": 600 },
+        "pass_when": {
+          "type": "object",
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "exit_code": { "type": "integer", "minimum": 0, "maximum": 255 },
+            "output_matches": { "type": "string", "format": "regex", "minLength": 1 }
+          }
+        }
+      }
+    },
+    "step": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "prompt"],
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z0-9][a-z0-9_-]*$" },
+        "agent": { "type": "string" },
+        "prompt": { "type": "string", "minLength": 1 },
+        "constraints": { "$ref": "#/$defs/constraints" },
+        "gate": { "$ref": "#/$defs/gate" },
+        "on_pass": { "type": "string", "pattern": "^(next|success|goto:[a-z0-9][a-z0-9_-]*)$", "default": "next" },
+        "on_fail": { "type": "string", "pattern": "^(retry|fail|goto:[a-z0-9][a-z0-9_-]*)$", "default": "retry" },
+        "max_iterations": { "type": "integer", "minimum": 1, "default": 3 }
+      }
+    }
+  }
+}

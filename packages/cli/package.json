@@ -1,0 +1,29 @@
+{
+  "name": "untilgreen",
+  "version": "0.1.0",
+  "description": "Run your coding agent until green — deterministic gates, any agent, local-first",
+  "license": "Apache-2.0",
+  "type": "module",
+  "bin": { "untilgreen": "./dist/index.js" },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": ["dist"],
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "tsc -p tsconfig.json && vitest run",
+    "lint": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@untilgreen/adapter-claude-code": "workspace:*",
+    "@untilgreen/adapter-codex": "workspace:*",
+    "@untilgreen/core": "workspace:*",
+    "@untilgreen/schema": "workspace:*",
+    "commander": "^12.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.14.0",
+    "typescript": "^5.5.4",
+    "vitest": "^2.1.9"
+  }
+}
