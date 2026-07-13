@@ -115,7 +115,7 @@ defaults: { agent: fake }
 steps:
   - id: fix
     prompt: "attempt {{ iteration }}"
-    gate: { run: "echo failure $$; false" }
+    gate: { run: "c=$(cat .nc 2>/dev/null || echo 0); c=$((c+1)); echo $c > .nc; echo failure $c; false" }
     max_iterations: 2
 `,
     );

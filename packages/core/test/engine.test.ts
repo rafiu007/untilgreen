@@ -29,10 +29,18 @@ function makeDeps(adapter: FakeAdapter, over: Partial<EngineDeps> = {}): EngineD
   };
 }
 
-/** shell gate that fails until the Nth call: uses a temp counter file */
+/** shell gate that fails until the Nth call: uses a temp counter file.
+ * POSIX-sh only (Ubuntu /bin/sh is dash — no $RANDOM, no bashisms). */
 function failUntil(n: number): string {
   const file = `/tmp/untilgreen-test-${Math.random().toString(36).slice(2)}`;
   return `c=$(cat ${file} 2>/dev/null || echo 0); c=$((c+1)); echo $c > ${file}; echo "attempt $c failed"; [ $c -ge ${n} ]`;
+}
+
+/** shell gate that always fails but with DISTINCT output each attempt, so
+ * only the budget/iteration limit under test can end the run — never the
+ * identical-failures doom-loop brake. */
+function alwaysFailDistinct(): string {
+  return failUntil(Number.MAX_SAFE_INTEGER);
 }
 
 describe("routing state machine", () => {
@@ -87,7 +95,7 @@ describe("routing state machine", () => {
           {
             id: "a",
             prompt: "x {{ iteration }}",
-            gate: { run: "echo failure $RANDOM; false" },
+            gate: { run: alwaysFailDistinct() },
             on_fail: "retry",
             max_iterations: 2,
           },
@@ -180,7 +188,7 @@ describe("routing state machine", () => {
       wf({
         budget: { max_usd: 5 },
         steps: [
-          { id: "a", prompt: "x {{ iteration }}", gate: { run: "echo fail $RANDOM; false" }, max_iterations: 10 },
+          { id: "a", prompt: "x {{ iteration }}", gate: { run: alwaysFailDistinct() }, max_iterations: 10 },
         ],
       }),
       {},
@@ -202,7 +210,7 @@ describe("routing state machine", () => {
           {
             id: "a",
             prompt: "x {{ iteration }}",
-            gate: { run: "echo fail $RANDOM; false" },
+            gate: { run: alwaysFailDistinct() },
             on_fail: "retry",
             max_iterations: 99,
           },
@@ -258,7 +266,7 @@ describe("routing state machine", () => {
     const result = await runWorkflow(
       wf({
         steps: [
-          { id: "a", prompt: "x {{ iteration }}", gate: { run: "echo fail $RANDOM; false" }, max_iterations: 99 },
+          { id: "a", prompt: "x {{ iteration }}", gate: { run: alwaysFailDistinct() }, max_iterations: 99 },
         ],
       }),
       {},
